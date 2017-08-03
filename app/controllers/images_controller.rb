@@ -43,7 +43,12 @@ class ImagesController < ApplicationController
       if @image.save
         original=ImageContent.new(image_content_params)
         contents=ImageContentCreator.new(@image, original).build_contents
-        if (contents.save!) 
+        contents.save!
+        # check if the image belows to a user
+        if image_content_params.has_key?(:user_id)
+          current_user.image_id = @image.id
+          current_user.save!
+        else
           role=current_user.add_role(Role::ORGANIZER, @image)
           @image.user_roles << role.role_name
           role.save!

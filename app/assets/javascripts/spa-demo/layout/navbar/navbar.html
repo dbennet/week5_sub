@@ -39,6 +39,11 @@
       <ul class="nav navbar-nav navbar-right">
         <li id="login-dropdown" class="dropdown">
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+          <img width="36"
+              heigth="36"
+              ng-src="{{$ctrl.user_image_url}}"
+              ng-show="$ctrl.user_image_show">
+          </img>
           <span id="navbar-loginlabel">{{$ctrl.getLoginLabel()}}</span>
           <span class="caret"></span></a>
 
@@ -52,3 +57,5 @@
     </div><!-- /.navbar-collapse -->
   </div><!-- /.container-fluid -->
 </nav>
+
+

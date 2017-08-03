@@ -4,7 +4,8 @@ namespace :ptourist do
   ORIGINATORS=["carol","alice"]
   BOYS=["greg","peter","bobby"]
   GIRLS=["marsha","jan","cindy"]
-  BASE_URL="http://dev9.jhuep.com/fullstack-capstone"
+  BASE_URL="https://dev9.jhuep.com/fullstack-capstone"
+  USER_URL = "https://www.planetworldcup.com/LEGENDS/maradona.jpg"
 
   def user_name first_name
     last_name = (first_name=="alice") ? "nelson" : "brady"
@@ -49,6 +50,26 @@ namespace :ptourist do
   def mike_user
     @mike_user ||= get_user("mike")
   end
+
+  def create_user_image(user)
+    # puts "downloading: #{USER_URL}"
+    #contents = open(USER_URL, {ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE}).reaed
+    puts "ï fucking hate paths"
+    puts "#{Rails.root}"
+
+    fin = File.new("#{Rails.root}/lib/tasks/Diego-Maradona.jpg","rb")
+    #contents = open(File.new("#{Rails.root}/lib/tasks/Diego-Maradona.jpg","rb"), {ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE}).read
+    #contents = open(File.new("#{Rails.root}/lib/tasks/Diego-Maradona.jpg","rb"), {ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE}).read
+    contents = fin.read
+    image=Image.create(:creator_id=>user.id)
+    original_content=ImageContent.new(:image_id=>image.id,
+                                      :content_type=>"image/jpeg",
+                                      :content=>BSON::Binary.new(contents))
+    ImageContentCreator.new(image, original_content).build_contents.save!
+    user.image_id = image.id
+    user.save!
+  end
+
 
   def create_image organizer, img
     puts "building image for #{img[:caption]}, by #{organizer.name}"
@@ -128,9 +149,17 @@ namespace :ptourist do
     puts "users:#{User.pluck(:name)}"
   end
 
+
   desc "reset things, images, and links" 
   task subjects: [:users] do
     puts "creating things, images, and links"
+
+    MEMBERS.each do |p|
+        create_user_image(get_user(p))
+    end
+
+
+
 
     thing={:name=>"B&O Railroad Museum",
     :description=>"Discover your adventure at the B&O Railroad Museum in Baltimore, Maryland. Explore 40 acres of railroad history at the birthplace of American railroading. See, touch, and hear the most important American railroad collection in the world! Seasonal train rides for all ages.",
@@ -368,6 +397,9 @@ Work up a sweat in our 24-hour StayFit Gym, which features Life Fitness® cardio
      :lat=>39.2858057
      }
     create_image organizer, image
+
+
+    
 
     puts "#{Thing.count} things created and #{ThingImage.count("distinct thing_id")} with images"
     puts "#{Image.count} images created and #{ThingImage.count("distinct image_id")} for things"
