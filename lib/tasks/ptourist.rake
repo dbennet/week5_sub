@@ -54,7 +54,6 @@ namespace :ptourist do
   def create_user_image(user)
     # puts "downloading: #{USER_URL}"
     #contents = open(USER_URL, {ssl_verify_mode: OpenSSL::SSL::VERIFY_NONE}).reaed
-    puts "ï fucking hate paths"
     puts "#{Rails.root}"
 
     fin = File.new("#{Rails.root}/lib/tasks/Diego-Maradona.jpg","rb")
