@@ -16,6 +16,7 @@
     service.getCurrentUserId = getCurrentUserId;
     service.login = login;
     service.logout = logout;
+    service.activateUser = activateUser;
 
     activate();
     return;
@@ -33,6 +34,27 @@
     function isAuthenticated() {
       return service.user!=null && service.user["uid"]!=null;
     }
+
+    function activateUser(){
+      var deferred = $q.defer();
+      var result = $auth.validateUser();
+      result.then(function (user){
+        console.log("activateUser", user);
+        service.user = user;
+        deferred.resolve();
+      }).catch(function(errors){
+        console.log("activateUser error", errors);
+        deferred.reject(errors);
+      });
+      return deferred.promise;
+    }
+
+
+
+
+
+
+
     function getCurrentUserName() {
       return service.user!=null ? service.user.name : null;
     }

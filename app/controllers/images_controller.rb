@@ -47,7 +47,8 @@ class ImagesController < ApplicationController
         contents=ImageContentCreator.new(@image, original).build_contents
         contents.save!
         # check if the image belows to a user
-        if image_content_params.has_key?(:user_id)
+        if user_image?(image_content_params)
+          # image_content_params.has_key?(:user_id)
           current_user.image_id = @image.id
           current_user.save!
         else
@@ -61,6 +62,14 @@ class ImagesController < ApplicationController
       end
     end
   end
+
+
+  def user_image?
+    return params[:user][:id].present? if params[:user].present?
+    false
+  end
+
+
 
   def update
     authorize @image

@@ -14,7 +14,11 @@
     return APP_CONFIG.authn_signup_html;
   }
 
-  SignupController.$inject = ["$scope","$state","spa-demo.authn.Authn","spa-demo.layout.DataUtils","spa-demo.subjects.Image"];
+  SignupController.$inject = ["$scope",
+                              "$state",
+                              "spa-demo.authn.Authn",
+                              "spa-demo.layout.DataUtils",
+                              "spa-demo.subjects.Image"];
   function SignupController($scope, $state, Authn, DataUtils, Image) {
     var vm=this;
     vm.setImageContent = setImageContent;
