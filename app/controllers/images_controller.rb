@@ -9,9 +9,7 @@ class ImagesController < ApplicationController
 
   def index
     authorize Image
-    #@images = policy_scope(Image.all)
-    # dont select user images
-    @images = policy_scope(Image.not_user_image)
+    @images = policy_scope(Image.not_belonging_to_a_user)
     @images = ImagePolicy.merge(@images)
   end
 
@@ -24,7 +22,7 @@ class ImagesController < ApplicationController
   def content
     result=ImageContent.image(@image).smallest(params[:width],params[:height]).first
     if result
-      expires_in 1.year, :public=>true 
+      expires_in 1.year, :public=>true
       if stale? result
         options = { type: result.content_type,
                     disposition: "inline",
@@ -46,30 +44,20 @@ class ImagesController < ApplicationController
         original=ImageContent.new(image_content_params)
         contents=ImageContentCreator.new(@image, original).build_contents
         contents.save!
-        # check if the image belows to a user
-        if user_image?(image_content_params)
-          # image_content_params.has_key?(:user_id)
+        if user_image?
           current_user.image_id = @image.id
           current_user.save!
         else
           role=current_user.add_role(Role::ORGANIZER, @image)
           @image.user_roles << role.role_name
           role.save!
-          render :show, status: :created, location: @image
         end
+        render :show, status: :created, location: @image
       else
         render json: {errors:@image.errors.messages}, status: :unprocessable_entity
       end
     end
   end
-
-
-  def user_image?
-    return params[:user][:id].present? if params[:user].present?
-    false
-  end
-
-
 
   def update
     authorize @image
@@ -106,17 +94,26 @@ class ImagesController < ApplicationController
       }.permit(:content_type, :content)
     end
 
+    def user_params
+      params.require(:user).permit(:id)
+    end
+
     def contents_error exception
       render json: {errors:{full_messages:["unable to create image contents","#{exception}"]}},
             status: :unprocessable_entity
       Rails.logger.debug exception
     end
 
-    def mongoid_validation_error(exception) 
+    def mongoid_validation_error(exception)
       payload = { errors:exception.record.errors.messages
-                     .slice(:content_type,:content,:full_messages) 
+                     .slice(:content_type,:content,:full_messages)
                      .merge(full_messages:["unable to create image contents"])}
       render :json=>payload, :status=>:unprocessable_entity
       Rails.logger.debug exception.message
+    end
+
+    def user_image?
+      return params[:user][:id].present? if params[:user].present?
+      false
     end
 end
